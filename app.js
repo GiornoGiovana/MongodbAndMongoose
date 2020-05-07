@@ -1,48 +1,35 @@
 //use template with EJS install ejs with npm
-
 const express = require("express");
+const cors = require("cors");
 const bodyParse = require("body-parser");
+const mongoose = require("mongoose");
+
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 3000;
 
-let items = ['Just 4 fun']; //ise always let instend of var because of the scope !!!!REMEMBER IT DOG!!!!!
-let workItems = [];
+app.use(cors());
+app.use(express.json());
 
 app.set('view engine', 'ejs'); //in order to use ejs, create a folder call views and inside put the template
 
 app.use(bodyParse.urlencoded({ extended: true}));//in order to get access the input of the user
 app.use(express.static("public"));
 
-app.get('/', (req, res) => {
-    
-    let event = new Date();
-    const options = { weekday: 'long', month:'long', day: 'numeric' };
-    let date = event.toLocaleDateString('en-US', options);
+const uri = process.env.ATLAS_URI; //get from mongodb
+mongoose.connect(uri, {useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
 
-    res.render('list', {listTitle: date, newListItems : items}); //dogsName is the varible of the template and pass the value
-    
-});
-
-app.post('/', (req, res) => { //get the input by a post and REMEMBER use de req(require).body.{input name}
-    let item = req.body.newItem;
-
-    if (req.body.list === "Work"){
-        workItems.push(item);
-        res.redirect('/work');
-    } else {
-        items.push(item);
-        res.redirect('/');
-    }
-
-});
-
-app.get('/work', (req, res) => {
-    res.render('list', {listTitle: "Work List", newListItems: workItems});
+const connection = mongoose.connection;
+connection.once("open", () => {
+    console.log("MongoDB database connection established successfully");
 })
 
+const itemsRouter = require('./routes/items');
+
+app.use('/', itemsRouter);
 
 
-
-app.listen(3000, function(){
-    console.log("Server started on port 3000");
+app.listen(port, function(){
+    console.log(`Server started on port ${port}`);
 });
