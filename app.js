@@ -26,9 +26,10 @@ connection.once("open", () => {
 })
 
 const itemsRouter = require('./routes/items');
+const listsRouter = require('./routes/lists');
 
 app.use('/', itemsRouter);
-
+app.use('/', listsRouter);
 
 app.listen(port, function(){
     console.log(`Server started on port ${port}`);
